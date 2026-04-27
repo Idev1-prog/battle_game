@@ -9,14 +9,12 @@ void Object::move_manual(int x_shift, int y_shift) {
     else _y += y_shift;
 }
 
-void Object::move_rand() {
-    int dx = RandomNum::get(-1, 1);
-    int dy = RandomNum::get(-1, 1);
+void Object::move_rand(size_t max_x, size_t max_y) {
+    int dir = RandomNum::get(0, 4);
 
-    if (dx < 0 && _x < static_cast<size_t>(-dx)) _x = 0;
-    else _x += dx;
-
-    if (dy < 0 && _y < static_cast<size_t>(-dy)) _y = 0;
-    else _y += dy;
+    if (dir == 1 && _x + 1 < max_x) _x++;
+    else if (dir == 2 && _x > 0) _x--;
+    else if (dir == 3 && _y + 1 < max_y) _y++;
+    else if (dir == 4 && _y > 0) _y--;
 }
 

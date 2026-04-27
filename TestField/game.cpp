@@ -197,8 +197,11 @@ size_t Player::max_y = M;
 // ======================= –≈¿À»«¿÷»ﬂ  À¿——¿ GAME =============================
 // ============================================================================
 
-Game::Game() : field(M, std::vector<char>(N, '.')), is_running(true),
-user(0, 0, '@', GREEN), computer(N - 1, M - 1, '@', RED) {
+Game::Game() : 
+    field(M, std::vector<char>(N, '.')), 
+    is_running(true),
+    user(0, 0, '@', GREEN),
+    computer(N - 1, M - 1, '@', RED) {
 }
 
 bool Game::chech_win(Player player) const noexcept {

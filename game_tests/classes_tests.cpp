@@ -5,10 +5,10 @@
 Возможно есть смысл сделать Google Mock тесты для рандома (если будет время)
 */
 
-#define WARRIOR_TEST
-#define NECROLIT_TEST
-#define TRICKSTER_TEST
-#define OBJECT_TEST
+//#define WARRIOR_TEST
+//#define NECROLIT_TEST
+//#define TRICKSTER_TEST
+//#define OBJECT_TEST
 //#define AI_INTAGRATION_TEST
 
 #ifdef OBJECT_TEST

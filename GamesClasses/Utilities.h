@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 
 #include <random>
@@ -7,8 +8,7 @@
 class RandomNum {
 private:
     static std::mt19937& engine() {
-        static std::random_device rd;
-        static std::mt19937 gen(rd());
+        thread_local static std::mt19937 gen{ std::random_device{}() };
         return gen;
     }
 
@@ -25,6 +25,7 @@ public:
         return dist(engine());
     }
 
+    // Sets the seed ONLY for the CURRENT stream generator
     static void seed(unsigned int value) {
         engine().seed(value);
     }

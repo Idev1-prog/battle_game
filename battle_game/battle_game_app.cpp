@@ -1,6 +1,12 @@
 #include <iostream>
-
+#include "GameElements.h"
 int main() {
-    std::cout << "GAME" << std::endl;
+    Game game;
+    game.start();
+
+    system("pause");
+    system("pause");
+    system("pause");
+    system("pause");
     return 0;
 }
