@@ -17,7 +17,7 @@ public:
 	}
 	virtual ~Object() = default;
 
-	void move_rand(size_t, size_t);
+	void move_rand(size_t max_x = SIZE_MAX, size_t max_y = SIZE_MAX);
 	void move_manual(int, int);
 
     size_t x() const noexcept { return _x; }
