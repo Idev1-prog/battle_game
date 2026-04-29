@@ -5,8 +5,8 @@
 #define KEY_S 0x53
 #define KEY_D 0x44
 #define IS_KEY_PRESSED 0x0001
-#define MOVE_USER_DELAY_MS 400
-#define MOVE_COMPUTER_DELAY_MS 200
+#define MOVE_USER_DELAY_MS 450
+#define MOVE_COMPUTER_DELAY_MS 150
 #define SLEEP_MS 50
 
 bool Player::move_right() noexcept {
@@ -129,6 +129,10 @@ void Game::print_field() {
     CONSOLE_SCREEN_BUFFER_INFO console_info;
     GetConsoleScreenBufferInfo(handle, &console_info);
     WORD saved_attributes = console_info.wAttributes;
+    CONSOLE_CURSOR_INFO cursor_info;
+    GetConsoleCursorInfo(handle, &cursor_info);
+    cursor_info.bVisible = false;
+    SetConsoleCursorInfo(handle, &cursor_info);
 
     size_t user_x = _user.get_character()->x();
     size_t user_y = _user.get_character()->y();
@@ -155,6 +159,8 @@ void Game::print_field() {
     }
 
     SetConsoleTextAttribute(handle, saved_attributes);
+    cursor_info.bVisible = true;
+    SetConsoleCursorInfo(handle, &cursor_info);
     std::cout << "\nWASD - Move | Q - Quit\n";
 }
 
@@ -168,7 +174,7 @@ void Game::start() {
 
         system("cls");
         print_field();
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        std::this_thread::sleep_for(std::chrono::milliseconds(175));
     }
 
     if (t_user.joinable()) t_user.join();
