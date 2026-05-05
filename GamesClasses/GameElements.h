@@ -9,11 +9,21 @@
 #define FIELD_SIDE 12
 #define USER_SYMBOL '$'
 #define COMPUTER_SYMBOL '%'
+#define PERS_CHOOSE_MENU "Выберите тип персонажа и впишите соответсвующую цифру:\n\
+1. Воин\n\
+2. Некролит\n\
+3. Ловкач"
 
 enum PlayerType {
 	User,
 	Computer,
 	Indefinite
+};
+
+enum CharacterType {
+	TypeWarrior,
+	TypeNecrolit,
+	TypeTrickster
 };
 
 class Player {
@@ -31,12 +41,17 @@ public:
 	const Character* get_character() const noexcept {
 		return _character.get();
 	}
+
+	Player(Player&& other) noexcept = default;
 	Player& operator=(Player&& other) noexcept = default;
 
 	bool do_move() noexcept;
-	//static Player create_random_player(PlayerType type, char symbol); TBD - вернет полнценно собранного пользователья (для списка инициализации)
+	static Player create_random_player(PlayerType type, char symbol,
+		size_t x = FIELD_SIDE - 1, size_t y = FIELD_SIDE - 1);
+	static Player create_promt_player(PlayerType type, char symbol, CharacterType cls, std::string name,
+		int hp, int power, int specific_stat1 = 0, int specific_stat2 = 0, size_t x = 0, size_t y = 0);
+	
 private:
-	//static std::unique_ptr<Character> generate_random_character(); TBD - генератор случайного персонажа
 
 	bool move_right() noexcept;
 	bool move_left() noexcept;

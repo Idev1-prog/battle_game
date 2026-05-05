@@ -5,7 +5,7 @@
 #define KEY_S 0x53
 #define KEY_D 0x44
 #define IS_KEY_PRESSED 0x0001
-#define MOVE_USER_DELAY_MS 450
+#define MOVE_USER_DELAY_MS 300
 #define MOVE_COMPUTER_DELAY_MS 150
 #define SLEEP_MS 50
 
@@ -47,7 +47,7 @@ bool Player::do_manual_move() noexcept {
         move_up();
         is_key_pressed = true;
     }
-    else if (GetAsyncKeyState(KEY_S) & IS_KEY_PRESSED) {
+    else if (GetAsyncKeyState(KEY_S) & IS_KEY_PRESSED) { // возможна проблема
         move_down();
         is_key_pressed = true;
     }
@@ -74,15 +74,128 @@ bool Player::do_move() noexcept {
     return false;
 }
 
+Player Player::create_random_player(PlayerType type, char symbol, size_t x, size_t y) {
+    int char_type = RandomNum::get(0, 2);
+    std::unique_ptr<Character> character;
+
+    switch (char_type) {
+    case TypeWarrior:
+        character = std::make_unique<Warrior>(x, y, "AI",
+            RandomNum::get(80, 200),
+            RandomNum::get(10, 25),
+            RandomNum::get(5, 25));
+        break;
+    case TypeNecrolit:
+        character = std::make_unique<Necrolit>(x, y, "AI",
+            RandomNum::get(80, 200),
+            RandomNum::get(10, 25));
+        break;
+    case TypeTrickster:
+        character = std::make_unique<Trickster>(x, y, "AI",
+            RandomNum::get(80, 200),
+            RandomNum::get(10, 25),
+            RandomNum::get(5, 15),
+            RandomNum::get(10, 20));
+        break;
+    default:
+        throw std::runtime_error("Unknown character type generated");
+    }
+
+    return std::move(Player(type, std::move(character), symbol));
+}
+
+Player Player::create_promt_player(PlayerType type, char symbol,
+    CharacterType cls, std::string name, int hp, int power,
+    int specific_stat1, int specific_stat2,
+    size_t x, size_t y) {
+    std::unique_ptr<Character> character;
+
+    switch (cls) {
+    case TypeWarrior:
+        character = std::make_unique<Warrior>(x, y, name, hp, power, specific_stat1);
+        break;
+    case TypeNecrolit:
+        character = std::make_unique<Necrolit>(x, y, name, hp, power);
+        break;
+    case TypeTrickster:
+        character = std::make_unique<Trickster>(x, y, name, hp, power, specific_stat1, specific_stat2);
+        break;
+    default:
+        throw std::invalid_argument("Invalid character type selected");
+    }
+
+    return std::move(Player(type, std::move(character), symbol));
+}
+
 Game::Game() : is_running(true) {
     for (auto& row : _field) {
         std::fill(std::begin(row), std::end(row), '.');
     }
-    auto userChar = std::make_unique<Warrior>(0, 0, "Player", 100, 10, 5);
-    auto compChar = std::make_unique<Warrior>(FIELD_SIDE - 1, FIELD_SIDE - 1, "AI", 100, 10, 5);
+    _computer = Player::create_random_player(Computer, COMPUTER_SYMBOL);
 
-    _user = std::move(Player(User, std::move(userChar), USER_SYMBOL));
-    _computer = std::move(Player(Computer, std::move(compChar), COMPUTER_SYMBOL));
+    int stat1 = 0, stat2 = 0, hp, power;
+    std::string name;
+    CharacterType character_type;
+
+    int user_input;
+    std::cout << "МЕНЮ СОЗДАНИЯ ПЕРСОНАЖА" << std::endl;
+    while (true) {
+        std::cout << PERS_CHOOSE_MENU << std::endl;
+        std::cin >> user_input;
+        if (user_input > 0 && user_input <= 3) break;
+        std::cout << "Неверный ввод" << std::endl;
+    }
+    character_type = static_cast<CharacterType>(user_input - 1);
+    std::cout << "Отлично, теперь самое время выбрать имя и основные харрактеристики" << std::endl;
+    std::cout << "Имя: ";
+    std::cin >> name;
+    while (true) {
+        std::cout << "HP: ";
+        std::cin >> hp;
+        if (hp > 0) break;
+        std::cout << "Неверное HP, введите его еще раз" << std::endl;
+    }
+    while (true) {
+        std::cout << "Power: ";
+        std::cin >> power;
+        if (power > 0) break;
+        std::cout << "Неверное Power, введите его еще раз" << std::endl;
+    }
+    if (character_type != TypeNecrolit)
+        std::cout << "Теперь добавим персонажу особых статов" << std::endl;
+
+    switch (character_type) {
+    case TypeWarrior:
+        while (true) {
+            std::cout << "Броня: " << std::endl;
+            std::cin >> stat1;
+            if (stat1 > 0) break;
+            std::cout << "Неверное значение брони, введите его заново" << std::endl;
+        }
+        _user = Player::create_promt_player(User, USER_SYMBOL, TypeWarrior, name, hp, power, stat1);
+        break;
+    case TypeTrickster:
+        while (true) {
+            std::cout << "Уклонение: ";
+            std::cin >> stat1;
+            if (stat1 > 0) break;
+            std::cout << "Неверное значение уклонения, введите его заново" << std::endl;
+        }
+        while (true) {
+            std::cout << "Шипы: ";
+            std::cin >> stat2;
+            if (stat2 > 0) break;
+            std::cout << "Неверное значение шипов, введите его заново" << std::endl;
+        }
+        _user = Player::create_promt_player(User, USER_SYMBOL, TypeTrickster, name, hp, power, stat1, stat2);
+        break;
+    case TypeNecrolit:
+        _user = Player::create_promt_player(User, USER_SYMBOL, TypeNecrolit, name, hp, power);
+        break;
+    default:
+        throw std::logic_error("Incorrect character typing");
+    }
+    system("cls");
 }
 
 void Game::user_move() {
