@@ -9,6 +9,22 @@
 #define MOVE_COMPUTER_DELAY_MS 150
 #define SLEEP_MS 50
 
+void clear_input_and_wait() {
+    while (_kbhit()) {
+        _getch();
+    }
+    _getch();
+}
+
+std::string character_naming(CharacterType character_type) {
+    switch (character_type) {
+    case TypeWarrior:   return "Warrior";
+    case TypeNecrolit:  return "Necrolit";
+    case TypeTrickster: return "Trickster";
+    default:            return "Unknown";
+    }
+}
+
 bool Player::move_right() noexcept {
     if (_character->x() < FIELD_SIDE - 1) {
         _character->move_manual(1, 0);
@@ -76,22 +92,23 @@ bool Player::do_move() noexcept {
 
 Player Player::create_random_player(PlayerType type, char symbol, size_t x, size_t y) {
     int char_type = RandomNum::get(0, 2);
+    std::string basic_name = (type == User) ? "Random" : "AI";
     std::unique_ptr<Character> character;
 
     switch (char_type) {
     case TypeWarrior:
-        character = std::make_unique<Warrior>(x, y, "AI",
+        character = std::make_unique<Warrior>(x, y, basic_name,
             RandomNum::get(80, 200),
             RandomNum::get(10, 25),
             RandomNum::get(5, 25));
         break;
     case TypeNecrolit:
-        character = std::make_unique<Necrolit>(x, y, "AI",
+        character = std::make_unique<Necrolit>(x, y, basic_name,
             RandomNum::get(80, 200),
             RandomNum::get(10, 25));
         break;
     case TypeTrickster:
-        character = std::make_unique<Trickster>(x, y, "AI",
+        character = std::make_unique<Trickster>(x, y, basic_name,
             RandomNum::get(80, 200),
             RandomNum::get(10, 25),
             RandomNum::get(5, 15),
@@ -101,7 +118,7 @@ Player Player::create_random_player(PlayerType type, char symbol, size_t x, size
         throw std::runtime_error("Unknown character type generated");
     }
 
-    return std::move(Player(type, std::move(character), symbol));
+    return std::move(Player(type, static_cast<CharacterType>(char_type), std::move(character), symbol));
 }
 
 Player Player::create_promt_player(PlayerType type, char symbol,
@@ -124,7 +141,7 @@ Player Player::create_promt_player(PlayerType type, char symbol,
         throw std::invalid_argument("Invalid character type selected");
     }
 
-    return std::move(Player(type, std::move(character), symbol));
+    return std::move(Player(type, cls, std::move(character), symbol));
 }
 
 Game::Game() : is_running(true) {
@@ -142,8 +159,12 @@ Game::Game() : is_running(true) {
     while (true) {
         std::cout << PERS_CHOOSE_MENU << std::endl;
         std::cin >> user_input;
-        if (user_input > 0 && user_input <= 3) break;
+        if (user_input > 0 && user_input <= 4) break;
         std::cout << "Неверный ввод" << std::endl;
+    }
+    if (user_input == 4) {
+        _user = Player::create_random_player(User, USER_SYMBOL, 0, 0);
+        return;
     }
     character_type = static_cast<CharacterType>(user_input - 1);
     std::cout << "Отлично, теперь самое время выбрать имя и основные харрактеристики" << std::endl;
@@ -167,7 +188,7 @@ Game::Game() : is_running(true) {
     switch (character_type) {
     case TypeWarrior:
         while (true) {
-            std::cout << "Броня: " << std::endl;
+            std::cout << "Броня: ";
             std::cin >> stat1;
             if (stat1 > 0) break;
             std::cout << "Неверное значение брони, введите его заново" << std::endl;
@@ -277,13 +298,73 @@ void Game::print_field() {
     std::cout << "\nWASD - Move | Q - Quit\n";
 }
 
+void Game::print_battle_info() {
+    PrintInString print_in_string;
+
+    print_in_string(">>> БОЙ <<<");
+
+    print_in_string("\n\nВаш персонаж:");
+    CharacterType user_character_type = _user.get_character_type();
+    print_in_string("Класс персонажа:", character_naming(user_character_type));
+    print_in_string("Имя:", _user.get_character()->name());
+    print_in_string("HP:", _user.get_character()->health());
+    print_in_string("Power:", _user.get_character()->power());
+
+    print_in_string("\n\nПротивник:");
+    CharacterType computer_character_type = _computer.get_character_type();
+    print_in_string("Класс персонажа:", character_naming(computer_character_type));
+    print_in_string("Имя:", _computer.get_character()->name());
+    print_in_string("HP:", _computer.get_character()->health());
+    print_in_string("Power:", _computer.get_character()->power());
+}
+
+bool Game::game_end() const noexcept {
+    PrintInString print_in_string;
+
+    bool user_status = _user.get_character()->is_alive();
+    bool computer_status = _computer.get_character()->is_alive();
+    if (user_status && computer_status) return false;
+    else if (user_status && !computer_status) {
+        print_in_string(">>> ВЫ ПОБЕДИЛИ!!! <<<");
+    }
+    else if (!user_status && computer_status) {
+        print_in_string(">>> ВЫ ПРОИГРАЛИ!!! <<<");
+    }
+    else {
+        print_in_string(">>> НИЧЬЯ <<<");
+    }
+    Sleep(5000);
+    return true;
+}
+
+void Game::start_battle() {
+    system("cls");
+    bool is_active = true;
+    while (is_active) {
+        print_battle_info();
+        if (game_end()) {
+            is_active = false;
+            break;
+        }
+        std::cout << "Для следующего хода нажмите любую клавишу" << std::endl;
+        clear_input_and_wait();
+        system("cls");
+        _user.attack(_computer);
+        _computer.attack(_user);
+    }
+}
 
 void Game::start() {
     std::thread t_user([this]() { this->user_move(); });
     std::thread t_comp([this]() { this->computer_move(); });
+    auto on_one_point = [this]() 
+        {
+        return this->_user.get_character()->x() == this->_computer.get_character()->x() && 
+            this->_user.get_character()->y() == this->_computer.get_character()->y(); 
+        };
 
     while (is_running) {
-        if (GetAsyncKeyState('Q') & IS_KEY_PRESSED) is_running = false;
+        if ((GetAsyncKeyState('Q') & IS_KEY_PRESSED) || on_one_point()) is_running = false;
 
         system("cls");
         print_field();
@@ -292,4 +373,26 @@ void Game::start() {
 
     if (t_user.joinable()) t_user.join();
     if (t_comp.joinable()) t_comp.join();
+
+    Sleep(1000);
+    start_battle();
+    system("cls");
 }
+
+//void wait_for_key(DWORD key_code = 0x0D) {
+//    std::cout << "Нажмите Enter для продолжения...";
+//
+//    // Сбрасываем состояние клавиши, чтобы не сработало старое нажатие
+//    GetAsyncKeyState(key_code);
+//
+//    while (true) {
+//        // Проверяем, нажата ли клавиша ПРЯМО СЕЙЧАС
+//        if (GetAsyncKeyState(key_code) & 0x8000) {
+//            // Небольшая задержка, чтобы избежать "дребезга" (multiple triggers)
+//            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+//            break;
+//        }
+//        // Даём процессору отдохнуть, чтобы не грузить ядро
+//        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+//    }
+//} maybe I'll use it later

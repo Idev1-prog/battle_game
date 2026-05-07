@@ -50,7 +50,7 @@ public:
 
 	virtual void attack(Character&) = 0;
 	virtual int attaked(const Character&, int, int) = 0;
-	virtual bool is_alive() { return _health > 0; }
+	virtual bool is_alive() const noexcept { return _health > 0; }
 };
 
 class Warrior : public Character {
