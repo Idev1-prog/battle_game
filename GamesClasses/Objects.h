@@ -6,14 +6,20 @@ class Object {
 protected:
 	size_t _x;
 	size_t _y;
+    char _sym;
+    int _color_code;
 public:
-	Object(size_t x = 0, size_t y = 0) :
+	Object(size_t x = 0, size_t y = 0, char sym = '0', int color_code = 0) :
 		_x(x),
-		_y(y) {
+		_y(y),
+        _sym(sym),
+        _color_code(color_code){
 	}
 	Object(const Object& other) :
 		_x(other._x),
-		_y(other._y) { 
+		_y(other._y), 
+        _sym(other._sym),
+        _color_code(other._color_code){ 
 	}
 	virtual ~Object() = default;
 
@@ -22,6 +28,8 @@ public:
 
     size_t x() const noexcept { return _x; }
     size_t y() const noexcept { return _y; }
+    char sym() const noexcept { return _sym; }
+    int color_code() const noexcept { return _color_code; }
 };
 
 class Character : public Object {
@@ -37,8 +45,8 @@ public:
 		_power(other._power),
 		_name(other._name) {
 	}
-	Character(size_t x, size_t y, const std::string& name, int hp, int power) :
-		Object(x, y),
+	Character(size_t x, size_t y, char sym, int color ,const std::string& name, int hp, int power) :
+		Object(x, y, sym, color),
 		_name(name),
 		_health(hp),
 		_power(power) {
@@ -57,12 +65,12 @@ class Warrior : public Character {
     int _armor;
 public:
     Warrior(const std::string& name, int hp, int power, int armor)
-        : Character(0, 0, name, hp, power),
+        : Character(0, 0, '0', 0, name, hp, power),
         _armor((armor > 0) ? armor : 0) {
     }
 
-    Warrior(size_t x, size_t y, const std::string& name, int hp, int power, int armor)
-        : Character(x, y, name, hp, power),
+    Warrior(size_t x, size_t y, char sym, int color, const std::string& name, int hp, int power, int armor)
+        : Character(x, y, sym, color, name, hp, power),
         _armor((armor > 0) ? armor : 0) {
     }
 
@@ -79,11 +87,11 @@ class Necrolit : public Character {
     bool _second_life = true;
 public:
     Necrolit(const std::string& name, int hp, int power)
-        : Character(0, 0, name, hp, power) {
+        : Character(0, 0, '0', 0, name, hp, power) {
     }
 
-    Necrolit(size_t x, size_t y, const std::string& name, int hp, int power)
-        : Character(x, y, name, hp, power) {
+    Necrolit(size_t x, size_t y, char sym, int color, const std::string& name, int hp, int power)
+        : Character(x, y, sym, color, name, hp, power) {
     }
 
     Necrolit() : Necrolit("Necrolit", 150, 15) {}
@@ -103,13 +111,13 @@ class Trickster : public Character {
     size_t _spiks;
 public:
     Trickster(const std::string& name, int hp, int power, size_t evasion, size_t spiks)
-        : Character(0, 0, name, hp, power),
+        : Character(0, 0, '0', 0, name, hp, power),
         _evasion(evasion),
         _spiks(spiks) {
     }
 
-    Trickster(size_t x, size_t y, const std::string& name, int hp, int power, size_t evasion, size_t spiks)
-        : Character(x, y, name, hp, power),
+    Trickster(size_t x, size_t y, char sym, int color, const std::string& name, int hp, int power, size_t evasion, size_t spiks)
+        : Character(x, y, sym, color, name, hp, power),
         _evasion(evasion),
         _spiks(spiks) {
     }
