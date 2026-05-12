@@ -17,4 +17,3 @@ void Object::move_rand(size_t max_x, size_t max_y) {
     else if (dir == 3 && _y + 1 < max_y) _y++;
     else if (dir == 4 && _y > 0) _y--;
 }
-

@@ -18,13 +18,25 @@ int Warrior::attaked(const Character& other, int dmg, int pure_damage) {
 	return 0;
 }
 
+void Warrior::update_stat(FeatureType type, int value) {
+	switch (type) {
+	case Health:
+		_health += (_health + value > 0) ? value : 0;
+		break;
+	case Power:
+		_power += (_power + value > 0) ? value : 0;
+		break;
+	case SpecificalStat:
+		_armor += (_armor + value > 0) ? (value + RandomNum::get(3, 5)) : 0;
+	}
+}
+
 // Necrolit
 
 void Necrolit::reincarnation() noexcept {
 	_health = 100;
 	_power = 15;
 	_second_life = false;
-	//move_rand(); TBD maybe
 }
 
 void Necrolit::attack(Character& other) {
@@ -53,6 +65,17 @@ int Necrolit::attaked(const Character& other, int dmg, int pure_damage) {
 	return 0;
 }
 
+void Necrolit::update_stat(FeatureType type, int value) {
+	switch (type) {
+	case Health:
+		_health += (_health + value > 0) ? value : 0;
+		break;
+	case Power:
+		_power += (_power + value > 0) ? value : 0;
+		break;
+	}
+}
+
 // Trickster
 
 void Trickster::attack(Character& other) {
@@ -72,4 +95,18 @@ int Trickster::attaked(const Character& other, int dmg, int pure_damage) {
 	}
 
 	return reflected_dmg;
+}
+
+void Trickster::update_stat(FeatureType type, int value) {
+	switch (type) {
+	case Health:
+		_health += (_health + value > 0) ? value : 0;
+		break;
+	case Power:
+		_power += (_power + value > 0) ? value : 0;
+		break;
+	case SpecificalStat:
+		_evasion += (_evasion + value > 0) ? value : 0;
+		_spiks += (_spiks + value > 0) ? value : 0;
+	}
 }

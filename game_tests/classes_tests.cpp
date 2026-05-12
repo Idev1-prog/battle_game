@@ -5,11 +5,12 @@
 Возможно есть смысл сделать Google Mock тесты для рандома (если будет время)
 */
 
-//#define WARRIOR_TEST
-//#define NECROLIT_TEST
-//#define TRICKSTER_TEST
-//#define OBJECT_TEST
-//#define AI_INTAGRATION_TEST
+#define WARRIOR_TEST
+#define NECROLIT_TEST
+#define TRICKSTER_TEST
+#define OBJECT_TEST
+#define AI_INTAGRATION_TEST
+#define ITEM_TEST
 
 #ifdef OBJECT_TEST
 
@@ -147,6 +148,17 @@ TEST(WarriorCombat, IsAliveWorks) {
     EXPECT_FALSE(w.is_alive());
 }
 
+TEST(WarriorUpdateStat, WarriorUpdateStat) {
+    Warrior warrior(0, 0, 'W', 0, "Armored", 100, 20, 10);
+    int initial_armor = warrior.get_armor();
+    
+    warrior.update_stat(SpecificalStat, 5);
+    
+    int armor_diff = warrior.get_armor() - initial_armor;
+    EXPECT_GE(armor_diff, 8);
+    EXPECT_LE(armor_diff, 10);
+}
+
 #endif // WARRIOR_TEST
 
 #ifdef NECROLIT_TEST
@@ -243,6 +255,17 @@ TEST(NecrolitCombat, ReincarnationWhenAttacked) {
     EXPECT_FALSE(victim.get_second_life());
 }
 
+TEST(NecrolitUpdateStat, NecrolitUpdateStat) {
+    Necrolit necro(0, 0, 'N', 0, "DarkOne", 100, 20);
+    int initial_hp = necro.health();
+    int initial_power = necro.power();
+    
+    necro.update_stat(SpecificalStat, 100);
+    
+    EXPECT_EQ(necro.health(), initial_hp);
+    EXPECT_EQ(necro.power(), initial_power);
+}
+
 //+AI TEST
 
 TEST(NecrolitCombat, ReincarnationOnlyOnce) {
@@ -300,6 +323,7 @@ TEST(NecrolitCombat, PureDamageIgnoresArmor) {
     EXPECT_GE(damage_dealt, 18);
     EXPECT_LE(damage_dealt, 25);
 }
+
 
 #endif // NECROLIT_TEST
 
@@ -405,6 +429,18 @@ TEST(TricksterCombat, EvasionZeroAlwaysHit) {
 
     EXPECT_LT(defender.health(), hp_before);
 }
+
+TEST(TricksterUpdateStat, TricksterUpdateStat) {
+    Trickster trick(0, 0, 'T', 0, "Sneaky", 100, 20, 10, 15);
+    size_t initial_evasion = trick.evasion();
+    size_t initial_spiks = trick.spiks();
+
+    // SpecificalStat для трикстера: +value к обоим статам
+    trick.update_stat(SpecificalStat, 5);
+
+    EXPECT_EQ(trick.evasion(), initial_evasion + 5);
+    EXPECT_EQ(trick.spiks(), initial_spiks + 5);
+}
 #endif // TRICKSTER_TEST
 
 #ifdef AI_INTAGRATION_TEST
@@ -464,3 +500,37 @@ TEST(BattleIntegration, MultiClassInteraction) {
     EXPECT_FALSE(n.get_second_life()); // вторая жизнь должна быть использована
 }
 #endif // AI_INTAGRATION_TEST
+
+#ifdef ITEM_TEST
+TEST(ObjectsTests, Item_IsActive_DefaultFalse) {
+    BonusMalus item(0, 0, '+', 0);
+    EXPECT_FALSE(item.is_active());
+}
+
+TEST(ObjectsTests, BonusMalus_Constructor_RandomizesTypeAndValue) {
+    for (int i = 0; i < 20; ++i) {
+        BonusMalus item(0, 0, '+', 0);
+        EXPECT_EQ(item.x(), 0);
+        EXPECT_EQ(item.y(), 0);
+        EXPECT_EQ(item.sym(), '+');
+    }
+}
+
+TEST(ObjectsTests, BonusMalus_UseItem_UpdatesWarriorHealth) {
+    Warrior warrior("TestWarrior", 100, 20, 10);
+    int initial_hp = warrior.health();
+
+    warrior.update_stat(Health, 25);
+
+    EXPECT_EQ(warrior.health(), initial_hp + 25);
+}
+
+TEST(ObjectsTests, BonusMalus_UseItem_NegativeValue_Clamped) {
+    Warrior warrior("TestWarrior", 10, 20, 10);
+
+    warrior.update_stat(Health, -50);
+
+    EXPECT_GE(warrior.health(), 0);
+    EXPECT_EQ(warrior.health(), 10);
+}
+#endif // ITEM_TEST

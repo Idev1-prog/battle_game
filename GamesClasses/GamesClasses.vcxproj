@@ -127,6 +127,7 @@
     <ClCompile Include="Characters.cpp" />
     <ClCompile Include="GameElements.cpp" />
     <ClCompile Include="GameElements.h" />
+    <ClCompile Include="Items.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="Utilities.h" />
   </ItemGroup>

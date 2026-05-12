@@ -2,7 +2,10 @@
 #include "memdata.h"
 #include "TVector.h"
 
-// === Тесты для MemData<int> ===
+#define TVECTOR_TEST
+
+#ifdef TVECTOR_TEST
+
 TEST(MemDataInt, DefaultConstructor) {
     MemData<int> md;
     EXPECT_EQ(md.size(), 0);
@@ -29,7 +32,6 @@ TEST(MemDataInt, CopyConstructor) {
     EXPECT_EQ(copy.data()[0], 1);
 }
 
-// === Тесты для TVector<int> ===
 TEST(TVectorInt, DefaultConstructor) {
     TVector<int> vec;
     EXPECT_EQ(vec.size(), 0);
@@ -106,3 +108,5 @@ TEST(TVectorDouble, InputOperator) {
     EXPECT_DOUBLE_EQ(vec[0], 1.5);
     EXPECT_DOUBLE_EQ(vec[2], 3.5);
 }
+
+#endif // TVECTOR_TEST

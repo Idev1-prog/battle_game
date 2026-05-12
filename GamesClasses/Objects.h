@@ -2,6 +2,12 @@
 #include <iostream>
 #include "Utilities.h"
 
+enum FeatureType {
+    Health,
+    Power,
+    SpecificalStat
+};
+
 class Object {
 protected:
 	size_t _x;
@@ -56,6 +62,7 @@ public:
 	inline int power() const noexcept { return _power; }
 	inline std::string name() const noexcept { return _name; }
 
+    virtual void update_stat(FeatureType, int) = 0;
 	virtual void attack(Character&) = 0;
 	virtual int attaked(const Character&, int, int) = 0;
 	virtual bool is_alive() const noexcept { return _health > 0; }
@@ -79,6 +86,7 @@ public:
     Warrior(const Warrior& other) = default;
 
     inline int get_armor() const { return _armor; }
+    void update_stat(FeatureType, int) override;
     void attack(Character&) override;
     int attaked(const Character&, int, int) override;
 };
@@ -99,6 +107,7 @@ public:
     Necrolit(const Necrolit& other) = default;
 
     inline bool get_second_life() const { return _second_life; }
+    void update_stat(FeatureType, int) override;
     void attack(Character&) override;
     int attaked(const Character&, int, int) override;
 
@@ -128,6 +137,34 @@ public:
 
     inline unsigned int evasion() const { return _evasion; }
     inline unsigned int spiks() const { return _spiks; }
+    void update_stat(FeatureType, int) override;
     void attack(Character&) override;
     int attaked(const Character&, int, int) override;
+};
+
+class Item : public Object {
+protected:
+    bool _is_active;
+public:
+    Item() : Object(), _is_active(false) {};
+    Item(size_t x, size_t y, char sym, int color, bool is_active) :
+        Object(x, y, sym, color),
+        _is_active(is_active) {
+    };
+    Item(const Item& other) :
+        Object(other),
+        _is_active(other._is_active) {
+    };
+    bool is_active() const noexcept { return _is_active; }
+
+    virtual void use_item(Character&) noexcept = 0;
+};
+
+class BonusMalus : public Item {
+    int _value;
+    FeatureType _type;
+public:
+    BonusMalus(size_t x, size_t y, char sym, int color);
+
+    inline void use_item(Character&) noexcept override;
 };
