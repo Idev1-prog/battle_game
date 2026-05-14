@@ -4,8 +4,11 @@
 #include <thread>
 #include <chrono>
 #include <conio.h>
+#include <utility>
+#include <unordered_set>
 #include "Utilities.h"
 #include "Objects.h"
+#include "TVector.h"
 
 #define PERS_CHOOSE_MENU "Выберите тип персонажа и впишите соответсвующую цифру:\n\
 1. Воин\n\
@@ -66,6 +69,22 @@ private:
 	bool move_down() noexcept;
 
 	bool do_manual_move() noexcept;
+};
+
+class Map {
+	TVector<TVector<std::pair<char, int>>> game_map;
+	TVector<TVector<std::unique_ptr<Item>>> logical_map;
+
+public:
+	Map(int items_count);
+	TVector<TVector<std::pair<char, int>>> map() { return game_map; }
+	//Item* request_item();
+	//void delete_object();
+private:
+	/*
+	* @return first x, second y
+	*/
+	std::pair<int, int> to_cartesian_coordinates(int coordinate) const;
 };
 
 class Game {

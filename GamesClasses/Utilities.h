@@ -1,11 +1,13 @@
 #pragma once
 #include <iostream>
-
 #include <random>
 #include <algorithm>
 
+#define ACTIVE_ITEMS_PERSENT 0 // после необходимо заменить на 10
 #define USER_SYMBOL '$'
 #define COMPUTER_SYMBOL '%'
+#define UNACTIVE_ITEM_SYMBOL '@'
+#define ACTIVE_ITEM_SYMBOL '!'
 #define USER_COLOR 0x0002 | 0x0008
 #define COMPUTER_COLOR 0x0004 | 0x0008
 #define ITEM_COLOR 0x0001 | 0x0008

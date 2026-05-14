@@ -145,6 +145,49 @@ Player Player::create_promt_player(PlayerType type, char symbol, int color,
     return std::move(Player(type, cls, std::move(character)));
 }
 
+std::pair<int, int> Map::to_cartesian_coordinates(int coordinate) const {
+    if (coordinate < 0 || coordinate >(FIELD_SIDE * FIELD_SIDE - 1)) {
+        throw std::invalid_argument("Координаты выходят за возможные допсустимые пределы поля");
+    }
+    return { coordinate % FIELD_SIDE, coordinate / FIELD_SIDE };
+}
+
+Map::Map(int items_count) {
+    float persent = ACTIVE_ITEMS_PERSENT;
+    int active_items = items_count * (persent / 100);
+    int unactive_items = items_count - active_items;
+    for (int y = 0; y < FIELD_SIDE; ++y) {
+        for (int x = 0; x < FIELD_SIDE; ++x) {
+            logical_map[y][x] = nullptr;
+        }
+    }
+
+    std::unordered_set<int> excluded_values;
+    int coordinate;
+    for (int i = 0; i < unactive_items; ++i) {
+
+        do {
+            coordinate = RandomNum::get(1, (FIELD_SIDE * FIELD_SIDE) - 1);
+        } while (excluded_values.find(coordinate) != excluded_values.end());
+        excluded_values.insert(coordinate);
+
+        auto cartesian_coordinates = to_cartesian_coordinates(coordinate);
+        logical_map[cartesian_coordinates.second][cartesian_coordinates.first] = 
+            std::make_unique<BonusMalus>
+            (
+                cartesian_coordinates.first, cartesian_coordinates.second,
+                UNACTIVE_ITEM_SYMBOL, ITEM_COLOR
+            );
+    }
+
+    for (int y = 0; y < FIELD_SIDE; ++y) {
+        for (int x = 0; x < FIELD_SIDE; ++x) {
+            game_map[y][x].first = logical_map[y][x]->sym();
+            game_map[y][x].second = logical_map[y][x]->color_code();
+        }
+    }
+}
+
 Game::Game() : is_running(true) {
     for (auto& row : _field) {
         std::fill(std::begin(row), std::end(row), '.');

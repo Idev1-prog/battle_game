@@ -27,7 +27,7 @@ void Warrior::update_stat(FeatureType type, int value) {
 		_power += (_power + value > 0) ? value : 0;
 		break;
 	case SpecificalStat:
-		_armor += (_armor + value > 0) ? (value + RandomNum::get(3, 5)) : 0;
+		_armor += (_armor + value > 0) ? (value + RandomNum::get(3, 5)) : 0; // необходим частичный перенос данного функционала в Items
 	}
 }
 
