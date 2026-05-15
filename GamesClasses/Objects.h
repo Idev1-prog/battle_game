@@ -5,7 +5,7 @@
 enum FeatureType {
     Health,
     Power,
-    SpecificalStat
+    SpecificalStats
 };
 
 class Object {
@@ -27,6 +27,7 @@ public:
         _sym(other._sym),
         _color_code(other._color_code){ 
 	}
+    Object(Object&& other) noexcept = default;
 	virtual ~Object() = default;
 
 	void move_rand(size_t max_x = SIZE_MAX, size_t max_y = SIZE_MAX);
@@ -36,6 +37,8 @@ public:
     size_t y() const noexcept { return _y; }
     char sym() const noexcept { return _sym; }
     int color_code() const noexcept { return _color_code; }
+
+    Object& operator=(Object&& other) noexcept = default;
 };
 
 class Character : public Object {

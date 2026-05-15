@@ -26,7 +26,7 @@ void Warrior::update_stat(FeatureType type, int value) {
 	case Power:
 		_power += (_power + value > 0) ? value : 0;
 		break;
-	case SpecificalStat:
+	case SpecificalStats:
 		_armor += (_armor + value > 0) ? (value + RandomNum::get(3, 5)) : 0; // необходим частичный перенос данного функционала в Items
 	}
 }
@@ -105,7 +105,7 @@ void Trickster::update_stat(FeatureType type, int value) {
 	case Power:
 		_power += (_power + value > 0) ? value : 0;
 		break;
-	case SpecificalStat:
+	case SpecificalStats:
 		_evasion += (_evasion + value > 0) ? value : 0;
 		_spiks += (_spiks + value > 0) ? value : 0;
 	}

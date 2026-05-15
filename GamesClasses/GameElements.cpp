@@ -90,6 +90,16 @@ bool Player::do_move() noexcept {
     return false;
 }
 
+void Player::item_event(std::unique_ptr<Item> item) {
+    if (item == nullptr)
+        throw std::invalid_argument("Параметр item не может быть nullptr");
+    if (!item->is_active()) {
+        item->use_item(*_character);
+    }
+    else
+        throw std::logic_error("На данный момент объект такого типа существовать не может");
+}
+
 Player Player::create_random_player(PlayerType type, char symbol, size_t x, size_t y) {
     int char_type = RandomNum::get(0, 2);
     std::string basic_name = (type == User) ? "Random" : "AI";
@@ -145,11 +155,26 @@ Player Player::create_promt_player(PlayerType type, char symbol, int color,
     return std::move(Player(type, cls, std::move(character)));
 }
 
-std::pair<int, int> Map::to_cartesian_coordinates(int coordinate) const {
-    if (coordinate < 0 || coordinate >(FIELD_SIDE * FIELD_SIDE - 1)) {
+std::pair<size_t, size_t> Map::to_cartesian_coordinates(size_t coordinate) const {
+    if (coordinate > (FIELD_SIDE * FIELD_SIDE) - 1) {
         throw std::invalid_argument("Координаты выходят за возможные допсустимые пределы поля");
     }
     return { coordinate % FIELD_SIDE, coordinate / FIELD_SIDE };
+}
+
+void Map::synchronize_maps() {
+    for (int y = 0; y < FIELD_SIDE; ++y) {
+        for (int x = 0; x < FIELD_SIDE; ++x) {
+            if (_logical_map[y][x] != nullptr) {
+                _game_map[y][x].first = _logical_map[y][x]->sym();
+                _game_map[y][x].second = _logical_map[y][x]->color_code();
+            }
+            else {
+                _game_map[y][x].first = '.';
+                _game_map[y][x].second = -1;
+            }
+        }
+    }
 }
 
 Map::Map(int items_count): _game_map(FIELD_SIDE), _logical_map(FIELD_SIDE) {
@@ -186,18 +211,7 @@ Map::Map(int items_count): _game_map(FIELD_SIDE), _logical_map(FIELD_SIDE) {
             );
     }
 
-    for (int y = 0; y < FIELD_SIDE; ++y) {
-        for (int x = 0; x < FIELD_SIDE; ++x) {
-            if (_logical_map[y][x] != nullptr) {
-                _game_map[y][x].first = _logical_map[y][x]->sym();
-                _game_map[y][x].second = _logical_map[y][x]->color_code();
-            }
-            else {
-                _game_map[y][x].first = '.';
-                _game_map[y][x].second = -1;
-            }
-        }
-    }
+    synchronize_maps();
 }
 
 Game::Game() : is_running(true), _field(10) {
@@ -326,6 +340,20 @@ void Game::print_field() {
     size_t comp_x = _computer.get_character()->x();
     size_t comp_y = _computer.get_character()->y();
 
+    auto map_screen = _field.map();
+    {
+        std::lock_guard<std::mutex> lock(mtx);
+        if (map_screen[user_y][user_x].first == UNACTIVE_ITEM_SYMBOL ||
+            map_screen[user_y][user_x].first == ACTIVE_ITEM_SYMBOL) {
+            _user.item_event(_field.request_item(user_x, user_y));
+        }
+        if (map_screen[comp_y][comp_x].first == UNACTIVE_ITEM_SYMBOL ||
+            map_screen[comp_y][comp_x].first == ACTIVE_ITEM_SYMBOL) {
+            _computer.item_event(_field.request_item(comp_x, comp_y));
+        }
+        _field.synchronize_maps();
+    }
+
     for (size_t y = 0; y < FIELD_SIDE; ++y) {
         for (size_t x = 0; x < FIELD_SIDE; ++x) {
             if (x == user_x && y == user_y) {
@@ -337,8 +365,8 @@ void Game::print_field() {
                 std::cout << _computer.get_character()->sym();
             }
             else {
-                SetConsoleTextAttribute(handle, saved_attributes);
-                std::cout << _field.map()[y][x].first;
+                SetConsoleTextAttribute(handle,(map_screen[y][x].first == '.') ? saved_attributes : map_screen[y][x].second);
+                std::cout << map_screen[y][x].first;
             }
             std::cout << ' ';
         }

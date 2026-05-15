@@ -152,7 +152,7 @@ TEST(WarriorUpdateStat, WarriorUpdateStat) {
     Warrior warrior(0, 0, 'W', 0, "Armored", 100, 20, 10);
     int initial_armor = warrior.get_armor();
     
-    warrior.update_stat(SpecificalStat, 5);
+    warrior.update_stat(SpecificalStats, 5);
     
     int armor_diff = warrior.get_armor() - initial_armor;
     EXPECT_GE(armor_diff, 8);
@@ -260,7 +260,7 @@ TEST(NecrolitUpdateStat, NecrolitUpdateStat) {
     int initial_hp = necro.health();
     int initial_power = necro.power();
     
-    necro.update_stat(SpecificalStat, 100);
+    necro.update_stat(SpecificalStats, 100);
     
     EXPECT_EQ(necro.health(), initial_hp);
     EXPECT_EQ(necro.power(), initial_power);
@@ -435,8 +435,8 @@ TEST(TricksterUpdateStat, TricksterUpdateStat) {
     size_t initial_evasion = trick.evasion();
     size_t initial_spiks = trick.spiks();
 
-    // SpecificalStat для трикстера: +value к обоим статам
-    trick.update_stat(SpecificalStat, 5);
+    // SpecificalStats для трикстера: +value к обоим статам
+    trick.update_stat(SpecificalStats, 5);
 
     EXPECT_EQ(trick.evasion(), initial_evasion + 5);
     EXPECT_EQ(trick.spiks(), initial_spiks + 5);

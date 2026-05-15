@@ -60,7 +60,7 @@ public:
 		}
 	}
 	bool do_move() noexcept;
-
+	void item_event(std::unique_ptr<Item> item);
 	
 private:
 	bool move_right() noexcept;
@@ -78,17 +78,21 @@ class Map {
 public:
 	Map(int items_count);
 	TVector<TVector<std::pair<char, int>>> map() const noexcept { return _game_map; }
-	//Item* request_item();
-	//void delete_object();
+	std::unique_ptr<Item> request_item(size_t x, size_t y) { return std::move(_logical_map[y][x]); }
+	/*
+	* @param cord = pair of (x, y)
+	*/
+	std::unique_ptr<Item> request_item(std::pair<size_t, size_t> cord) { return std::move(_logical_map[cord.second][cord.first]); }
+	void synchronize_maps();
 private:
 	/*
 	* @return first x, second y
 	*/
-	std::pair<int, int> to_cartesian_coordinates(int coordinate) const;
+	std::pair<size_t, size_t> to_cartesian_coordinates(size_t coordinate) const;
 };
 
 class Game {
-	Map _field;   // игровое поле
+	Map _field;								 // игровое поле
 	Player _user;                            // пользователь
 	Player _computer;                        // компьютер
 
