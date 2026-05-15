@@ -152,13 +152,19 @@ std::pair<int, int> Map::to_cartesian_coordinates(int coordinate) const {
     return { coordinate % FIELD_SIDE, coordinate / FIELD_SIDE };
 }
 
-Map::Map(int items_count) {
+Map::Map(int items_count): _game_map(FIELD_SIDE), _logical_map(FIELD_SIDE) {
+    for (size_t i = 0; i < FIELD_SIDE; ++i) {
+        _game_map[i].manual_memory_initialization(FIELD_SIDE);
+        _logical_map[i].manual_memory_initialization(FIELD_SIDE);
+    }
+
+
     float persent = ACTIVE_ITEMS_PERSENT;
     int active_items = items_count * (persent / 100);
     int unactive_items = items_count - active_items;
     for (int y = 0; y < FIELD_SIDE; ++y) {
         for (int x = 0; x < FIELD_SIDE; ++x) {
-            logical_map[y][x] = nullptr;
+            _logical_map[y][x] = nullptr;
         }
     }
 
@@ -172,7 +178,7 @@ Map::Map(int items_count) {
         excluded_values.insert(coordinate);
 
         auto cartesian_coordinates = to_cartesian_coordinates(coordinate);
-        logical_map[cartesian_coordinates.second][cartesian_coordinates.first] = 
+        _logical_map[cartesian_coordinates.second][cartesian_coordinates.first] = 
             std::make_unique<BonusMalus>
             (
                 cartesian_coordinates.first, cartesian_coordinates.second,
@@ -182,16 +188,19 @@ Map::Map(int items_count) {
 
     for (int y = 0; y < FIELD_SIDE; ++y) {
         for (int x = 0; x < FIELD_SIDE; ++x) {
-            game_map[y][x].first = logical_map[y][x]->sym();
-            game_map[y][x].second = logical_map[y][x]->color_code();
+            if (_logical_map[y][x] != nullptr) {
+                _game_map[y][x].first = _logical_map[y][x]->sym();
+                _game_map[y][x].second = _logical_map[y][x]->color_code();
+            }
+            else {
+                _game_map[y][x].first = '.';
+                _game_map[y][x].second = -1;
+            }
         }
     }
 }
 
-Game::Game() : is_running(true) {
-    for (auto& row : _field) {
-        std::fill(std::begin(row), std::end(row), '.');
-    }
+Game::Game() : is_running(true), _field(10) {
     _computer = Player::create_random_player(Computer, COMPUTER_SYMBOL);
 
     int stat1 = 0, stat2 = 0, hp, power;
@@ -329,7 +338,7 @@ void Game::print_field() {
             }
             else {
                 SetConsoleTextAttribute(handle, saved_attributes);
-                std::cout << _field[y][x];
+                std::cout << _field.map()[y][x].first;
             }
             std::cout << ' ';
         }

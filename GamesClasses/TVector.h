@@ -23,6 +23,12 @@ public:
     TVector(TVector&&);
     ~TVector() = default;
 
+    inline void manual_memory_initialization(int size) noexcept {
+        _mem.set_memory(size); 
+        _front = 0;
+        _mem._size = size;
+        _back = (_mem._size > 0) ? _mem._size - 1 : 0;
+    }
     inline bool is_empty() const noexcept { return _mem.is_empty(); }
     inline bool is_full() const noexcept { return _mem.is_full(); }
     inline size_t size() const noexcept { return _mem.size(); }
@@ -264,3 +270,48 @@ std::istream& operator>>(std::istream& in, TVector<T>& vec) {
     }
     return in;
 }
+
+
+
+
+//Возможное решения проблемы с многомерными массивами (ИИ-решение):
+//template<typename T>
+//void TVector<T>::resize(size_t new_size) {
+//    // 1. Если новый размер больше текущего, нужно расширить память
+//    if (new_size > _mem.capacity()) {
+//        // Используем ваш существующий механизм перевыделения
+//        // Но будьте осторожны: reset_memory может менять capacity и копировать данные
+//        _mem.reset_memory(calculate_capacity(new_size), _front);
+//        // После reset_memory _front обычно сбрасывается в 0, а _back корректируется
+//        _front = 0;
+//    }
+//
+//    // 2. Самое главное: обновляем логический размер
+//    // Если мы уменьшаем вектор, просто меняем size.
+//    // Если увеличиваем, новые элементы должны быть инициализированы T()
+//
+//    size_t old_size = _mem.size(); // Внимание: убедитесь, что _mem хранит актуальный size
+//
+//    if (new_size > old_size) {
+//        // Инициализируем новые ячейки значениями по умолчанию
+//        for (size_t i = old_size; i < new_size; ++i) {
+//            // Важно: обращаться нужно через правильный индекс, если вектор циклический
+//            // Но если мы только что сделали reset_memory и front=0, то можно прямо:
+//            _mem._data[i] = T();
+//        }
+//    }
+//
+//    // 3. Обновляем внутренние счетчики TVector
+//    _mem._size = new_size; // Или как у вас называется поле размера в MemData
+//
+//    if (new_size == 0) {
+//        _front = 0;
+//        _back = 0; // Или -1, зависит от вашей логики empty vector
+//    }
+//    else {
+//        // Если мы не трогали front, то back сдвигается
+//        // В простейшем случае (linear storage after resize):
+//        _front = 0;
+//        _back = new_size - 1;
+//    }
+//}

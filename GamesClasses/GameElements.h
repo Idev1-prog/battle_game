@@ -72,12 +72,12 @@ private:
 };
 
 class Map {
-	TVector<TVector<std::pair<char, int>>> game_map;
-	TVector<TVector<std::unique_ptr<Item>>> logical_map;
+	TVector<TVector<std::pair<char, int>>> _game_map;
+	TVector<TVector<std::unique_ptr<Item>>> _logical_map;
 
 public:
 	Map(int items_count);
-	TVector<TVector<std::pair<char, int>>> map() { return game_map; }
+	TVector<TVector<std::pair<char, int>>> map() const noexcept { return _game_map; }
 	//Item* request_item();
 	//void delete_object();
 private:
@@ -88,7 +88,7 @@ private:
 };
 
 class Game {
-	char _field[FIELD_SIDE][FIELD_SIDE];   // игровое поле
+	Map _field;   // игровое поле
 	Player _user;                            // пользователь
 	Player _computer;                        // компьютер
 
